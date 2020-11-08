@@ -1,7 +1,5 @@
 #include <DMXSerial.h>
 
-
-
 int ch1;
 int ch2;
 int ch3;
