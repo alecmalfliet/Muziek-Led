@@ -60,12 +60,12 @@ void loop() {
     chl4 = 255;
   }
   if (chl6 != vorigchl6){
-      speed = map(255 - chl6, 0, 255, -20000, 30000);
+      speed = map(255 - chl6, 0, 255, -32760, 32760);
       vorigchl6 = chl6;
   }
   if (timer > speed){
-      Stroboscoop(0);
-      timer = -32000;
+      Sterrenhemel(0);
+      timer = -32762;
   }
   timer += 1;
 }
