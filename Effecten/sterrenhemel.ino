@@ -1,6 +1,6 @@
 #include <DMXSerial.h>
 #include <FastLED.h>
-#define NUM_LEDS 100
+#define NUM_LEDS 255
 CRGB leds[NUM_LEDS];
 uint8_t hue = 0;
 

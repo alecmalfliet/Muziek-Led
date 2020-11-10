@@ -14,8 +14,15 @@ int chl4;
 
 int chl5;
 int chl6;
+int vorigchl6;
 int chl7;
 int chl8;
+
+int timer = 0;
+int speed;
+
+//plaatshouders voor funcsies 
+int plaatshouder1 = 0;
 
 void setup () {
   DMXSerial.init(DMXReceiver);
@@ -23,8 +30,9 @@ void setup () {
 
   FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
   FastLED.setBrightness(255);
-   
+
 }
+
 
 
 void loop() {
@@ -32,6 +40,7 @@ void loop() {
   unsigned long lastPacket = DMXSerial.noDataSince();
   
   if (lastPacket < 5000) {
+
     chl1 = DMXSerial.read(1);
     chl2 = DMXSerial.read(2);
     chl3 = DMXSerial.read(3);
@@ -43,8 +52,28 @@ void loop() {
     chl8 = DMXSerial.read(8);
 
 
+
   } else {
     // Show when no data was received since 5 seconds or more.
+    chl2 = 255;
+    chl3 = 255;
+    chl4 = 255;
+  }
+  if (chl6 != vorigchl6){
+      speed = map(255 - chl6, 0, 255, -32760, 32760);
+      vorigchl6 = chl6;
+  }
+  if (timer > speed){
+      ledsset(0);
+      timer = -32762;
+  }
+  timer += 1;
+}
 
-  } 
+void ledsset(){
+
+    for (int i = 0;i < chl5; i++){
+        leds[i] = CRGB(chl2, chl3, chl4);
+    }
+    FastLED.show();
 }
