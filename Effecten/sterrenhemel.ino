@@ -64,13 +64,13 @@ void loop() {
       vorigchl6 = chl6;
   }
   if (timer > speed){
-      Sterrenhemel(0);
+      Sterrenhemel();
       timer = -32762;
   }
   timer += 1;
 }
 
-void Sterrenhemel(int speed){
+void Sterrenhemel(){
 
     for (int i = 0;i < NUM_LEDS; i++){
             leds[i] = CRGB(0, 0, 0);

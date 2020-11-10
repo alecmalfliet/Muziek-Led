@@ -64,7 +64,7 @@ void loop() {
       vorigchl6 = chl6;
   }
   if (timer > speed){
-      ledsset(0);
+      ledsset();
       timer = -32762;
   }
   timer += 1;
