@@ -13,7 +13,7 @@ int vorigchl6;
 int timer = 0;
 int speed;
 uint8_t hue = 0;
-// zorgt er voor dat de eeprom maar 1 keer gelezen word
+// zorgt er voor dat de eeprom maar 1 keer gelezen wordt
 bool eeprom_read = false;
 
 //plaatshouders voor funcsies 
@@ -27,24 +27,9 @@ void setup () {
 }
 
 void loop() {
-  //zet de EEPROM values in de juist channels definitie
-  if (eeprom_read == false){
-    chl1 = EEPROM.read(1);
-    chl2 = EEPROM.read(2);
-    chl3 = EEPROM.read(3);
-    chl4 = EEPROM.read(4);
-    chl5 = EEPROM.read(5);
-    chl6 = EEPROM.read(6);
-    chl7 = EEPROM.read(7);
-    chl8 = EEPROM.read(8);
-    eeprom_read = true;
-  }
 
   DMXscannen();
-
-
-
-
+  
 // Regelt de snelijd van het effect.
   if (chl6 != vorigchl6){
       speed = map(255 - chl6, 0, 255, -32760, 32760);
@@ -178,6 +163,18 @@ void DMXscannen(){
   } else {
     // Laat zien wanner er geen data ontvangen is langer als 5 seconden.
 
+    //zet de EEPROM values in de juist channels definitie
+    if (eeprom_read == false){
+      chl1 = EEPROM.read(1);
+      chl2 = EEPROM.read(2);
+      chl3 = EEPROM.read(3);
+      chl4 = EEPROM.read(4);
+      chl5 = EEPROM.read(5);
+      chl6 = EEPROM.read(6);
+      chl7 = EEPROM.read(7);
+      chl8 = EEPROM.read(8);
+      eeprom_read = true;
+    }
   }
 
 }  
