@@ -3,7 +3,14 @@
 #include <EEPROM.h>
 #define NUM_LEDS 255
 CRGB leds[NUM_LEDS];
+
+//Insteling 
 #define DATA_PIN 5
+
+//aantal effecten standaardt 6
+const int effecten = 6;
+
+
 //channels definitie 
 int chl1, chl2, chl3, chl4, chl5, chl6, chl7, chl8;
 int chl9, chl10, chl11, chl12, chl13, chl14, chl15, chl16;
@@ -42,87 +49,7 @@ void loop() {
   timer += 1;
 
     if ((chl9 > 250) && (chl10 > 250) && (chl11 > 250) && (chl12 > 250)){
-      unsigned long previousMillis = 0;
-      const long interval = 1000;
-      bool statusleds = false;
-      bool mode = false;
-
-      while (mode == false){
-        if ((chl9 == 0) && (chl10 == 0) && (chl11 == 0) && (chl12 == 0)){
-          mode = true;
-        }
-        unsigned long currentMillis = millis();
-        // knipperen leds rood
-        if (currentMillis - previousMillis >= interval) {
-          previousMillis = currentMillis;
-          if (statusleds == true) {
-            for (int i = 0; i < NUM_LEDS; i++) {
-              leds[i] = CRGB(0, 255, 0);
-            }
-            FastLED.show();
-            statusleds = false;
-          } else {
-            for (int i = 0; i < NUM_LEDS; i++) {
-              leds[i] = CRGB(0, 0, 0);
-            }
-            FastLED.show();
-            statusleds = true;
-          }
-        }
-        DMXscannen();
-      }
-
-      // slaat de channels op in de EERROM voor wanner er geen dmx is en je toch bepaalde insteling wilt houden.
-      EEPROM.write(1, chl1);
-      EEPROM.write(2, chl2);
-      EEPROM.write(3, chl3);
-      EEPROM.write(4, chl4);
-      EEPROM.write(5, chl5);
-      EEPROM.write(6, chl6);
-      EEPROM.write(7, chl7);
-      EEPROM.write(8, chl8);
-
-      // hier word bepaalt en opgeslagen welk channels de arduino moet naar luisteren
-      if ((chl13 > 250) && (chl14 > 250) && (chl15 > 255)) {
-        int channelstart;
-        if (chl16 < 17){
-          channelstart = 0;
-        } else if (chl16 < 33){
-          channelstart = 16;
-        } else if (chl16 < 49){
-          channelstart = 32;
-        } else if (chl16 < 65){
-          channelstart = 48;
-        } else if (chl16 < 81){
-          channelstart = 64;
-        } else if (chl16 < 97){
-          channelstart = 80;
-        } else if (chl16 < 113){
-          channelstart = 96;
-        } else if (chl16 < 129){
-          channelstart = 112;
-        } else if (chl16 < 145){
-          channelstart = 128;
-        } else if (chl16 < 161){
-          channelstart = 144;
-        } else if (chl16 < 177){
-          channelstart = 160;
-        } else if (chl16 < 161){
-          channelstart = 176;
-        }
-        EEPROM.write(0, channelstart);
-      }
-
-      int a;
-      while (a < 200)
-      {            
-        for (int i = 0; i < NUM_LEDS; i++) {
-          leds[i] = CRGB(255, 0, 0);
-        }
-        FastLED.show();
-        a = a + 1;
-      }
-      
+      ProgramerMode();
     }
 }
 
@@ -133,6 +60,90 @@ void Regenboog(){
     leds[i] = CHSV(hue + (i * Veelvuldig), 255, 150);
   }
   FastLED.show();
+}
+
+//dient om het effect te onthouden.  
+void ProgramerMode() {
+  unsigned long previousMillis = 0;
+  const long interval = 1000;
+  bool statusleds = false;
+  bool mode = false;
+
+  while (mode == false) {
+    if ((chl9 == 0) && (chl10 == 0) && (chl11 == 0) && (chl12 == 0)) {
+      mode = true;
+    }
+    unsigned long currentMillis = millis();
+    // knipperen leds rood
+    if (currentMillis - previousMillis >= interval) {
+      previousMillis = currentMillis;
+      if (statusleds == true) {
+        for (int i = 0; i < NUM_LEDS; i++) {
+          leds[i] = CRGB(0, 255, 0);
+        }
+        FastLED.show();
+        statusleds = false;
+      } else {
+        for (int i = 0; i < NUM_LEDS; i++) {
+          leds[i] = CRGB(0, 0, 0);
+        }
+        FastLED.show();
+        statusleds = true;
+      }
+    }
+    DMXscannen();
+  }
+
+  // slaat de channels op in de EERROM voor wanner er geen dmx is en je toch bepaalde insteling wilt houden.
+  EEPROM.write(1, chl1);
+  EEPROM.write(2, chl2);
+  EEPROM.write(3, chl3);
+  EEPROM.write(4, chl4);
+  EEPROM.write(5, chl5);
+  EEPROM.write(6, chl6);
+  EEPROM.write(7, chl7);
+  EEPROM.write(8, chl8);
+
+  // hier word bepaalt en opgeslagen welk channels de arduino moet naar luisteren
+  if ((chl13 > 250) && (chl14 > 250) && (chl15 > 255)) {
+    int channelstart;
+    if (chl16 < 17) {
+      channelstart = 0;
+    } else if (chl16 < 33) {
+      channelstart = 16;
+    } else if (chl16 < 49) {
+      channelstart = 32;
+    } else if (chl16 < 65) {
+      channelstart = 48;
+    } else if (chl16 < 81) {
+      channelstart = 64;
+    } else if (chl16 < 97) {
+      channelstart = 80;
+    } else if (chl16 < 113) {
+      channelstart = 96;
+    } else if (chl16 < 129) {
+      channelstart = 112;
+    } else if (chl16 < 145) {
+      channelstart = 128;
+    } else if (chl16 < 161) {
+      channelstart = 144;
+    } else if (chl16 < 177) {
+      channelstart = 160;
+    } else if (chl16 < 161) {
+      channelstart = 176;
+    }
+    EEPROM.write(0, channelstart);
+  }
+
+  int a;
+  while (a < 200)
+  {
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i] = CRGB(255, 0, 0);
+    }
+    FastLED.show();
+    a = a + 1;
+  }
 }
 
 
