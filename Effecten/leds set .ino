@@ -71,7 +71,6 @@ void loop() {
 }
 
 void ledsset(){
-
     for (int i = 0;i < chl5; i++){
         leds[i] = CRGB(chl2, chl3, chl4);
     }
