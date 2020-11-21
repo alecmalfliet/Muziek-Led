@@ -53,7 +53,7 @@ void Sterrenhemel(){
 }
 
 // Een redelijk standaard Stroboscoop
-void Stroboscoop(int speed){
+void Stroboscoop(){
     if (plaatshouder1 == 0){
         for (int i = 0;i < NUM_LEDS; i++){
             leds[i] = CRGB(chl2, chl3, chl4);
