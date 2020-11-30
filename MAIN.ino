@@ -1,21 +1,35 @@
 #include <DMXSerial.h>
 #include <FastLED.h>
 #include <EEPROM.h>
-#define NUM_LEDS 255
-CRGB leds[NUM_LEDS];
+
+
 
 //Insteling 
+//################################
 #define DATA_PIN 5
-
+#define Geluidsensor_PIN 8
+#define NUM_LEDS 255
+//geluide sensor 
+const int OUT_PIN = 8;
+const int SAMPLE_TIME = 15;
 //aantal effecten standaardt 6
 const int effecten = 6;
+//################################
 
 
+CRGB leds[NUM_LEDS];
 //channels definitie 
 int chl1, chl2, chl3, chl4, chl5, chl6, chl7, chl8;
 int chl9, chl10, chl11, chl12, chl13, chl14, chl15, chl16;
 
 int vorigchl6;
+
+unsigned long millisCurrent;
+unsigned long millisLast = 0;
+unsigned long millisElapsed = 0;
+int geluidlevel;
+int sampleBuffergeluidlevelue = 0;
+int minn;
 
 int timer = 0;
 int speed;
@@ -34,6 +48,53 @@ void setup () {
 }
 
 void loop() {
+  millisCurrent = millis();
+  millisElapsed = millisCurrent - millisLast;
+
+// geluid sensor
+  if (digitalRead(OUT_PIN) == HIGH) {
+    sampleBuffergeluidlevelue++;
+  }
+//-------------------------------
+  if (millisElapsed > SAMPLE_TIME) {
+    Serial.println(sampleBuffergeluidlevelue);
+    //Laat de effecten rejageren op het geluide
+    if (chl7 >= 127){
+
+    }
+    //Serial.println(geluidlevel);
+    int geluidvoorlopig;
+    geluidvoorlopig = map(sampleBuffergeluidlevelue, 0, 3, 3, 60);
+
+    if (geluidvoorlopig > geluidlevel){
+      if (geluidvoorlopig > 48){
+        geluidlevel = geluidlevel + 2;
+      } else if (geluidvoorlopig > 30){
+        geluidlevel = geluidlevel + 3;
+      } else{
+        geluidlevel = geluidlevel + 6;
+      }
+    }
+    if (geluidvoorlopig <  geluidlevel){
+      minn = minn + 1;
+      if (geluidlevel > 48 and minn == 4){
+        geluidlevel = geluidlevel - 3;
+        minn = 0;
+      } else if (geluidlevel > 30 and minn == 5){
+        geluidlevel = geluidlevel - 2;
+        minn = 0;
+      } else if (minn == 10){
+        geluidlevel = geluidlevel - 1;
+        minn = 0;
+      }
+    }
+    
+    sampleBuffergeluidlevelue = 0;
+    millisLast = millisCurrent;
+  }
+//-------------------------------
+
+
   int effectnummer;
   DMXscannen();
 
@@ -41,7 +102,7 @@ void loop() {
   
 // Regelt de snelijd van het effect.
   if (chl6 != vorigchl6){
-      speed = map(255 - chl6, 0, 255, -32760, 32760);
+      speed = map(255 - chl6, 0, 255, -32760, 20000);
       vorigchl6 = chl6;
   }
   if (timer > speed){
@@ -51,7 +112,7 @@ void loop() {
       if (effectnummer == 4) {Regenboog();}
       if (effectnummer == 5) {Sterrenhemel();}
       if (effectnummer == 6) {Stroboscoop();}
-      if (effectnummer == 7) {VolumeLevel(geluidsnevouw);}
+      if (effectnummer == 7) {VolumeLevel(geluidlevel);}
       timer = -32762;
   }
   timer += 1;
@@ -61,19 +122,10 @@ void loop() {
     }
 }
 
-void Regenboog(){
-  int Veelvuldig = map(chl3, 0, 255, 0, 100);
-  hue = hue + map(chl2, 0, 255, 0, 10);
-  for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CHSV(hue + (i * Veelvuldig), 255, 150);
-  }
-  FastLED.show();
-}
-
 //dient om het effect te onthouden.  
 void ProgramerMode() {
   unsigned long previousMillis = 0;
-  const long interval = 1000;
+  const long intergeluidlevel = 1000;
   bool statusleds = false;
   bool mode = false;
 
@@ -83,7 +135,7 @@ void ProgramerMode() {
     }
     unsigned long currentMillis = millis();
     // knipperen leds rood
-    if (currentMillis - previousMillis >= interval) {
+    if (currentMillis - previousMillis >= intergeluidlevel) {
       previousMillis = currentMillis;
       if (statusleds == true) {
         for (int i = 0; i < NUM_LEDS; i++) {
@@ -160,7 +212,7 @@ void DMXscannen(){
   unsigned long lastPacket = DMXSerial.noDataSince();
   
   if (lastPacket < 5000) {
-    //chl1 = DMXSerial.read(1);
+    chl1 = DMXSerial.read(1);
     chl2 = DMXSerial.read(2);
     chl3 = DMXSerial.read(3);
     chl4 = DMXSerial.read(4);
@@ -181,7 +233,7 @@ void DMXscannen(){
   } else {
     // Laat zien wanner er geen data ontvangen is langer als 5 seconden.
 
-    //zet de EEPROM values in de juist channels definitie
+    //zet de EEPROM geluidlevelues in de juist channels definitie
     if (eeprom_read == false){
       chl1 = EEPROM.read(1);
       chl2 = EEPROM.read(2);
