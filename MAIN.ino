@@ -57,12 +57,12 @@ void loop() {
   }
 //-------------------------------
   if (millisElapsed > SAMPLE_TIME) {
-    Serial.println(sampleBuffergeluidlevelue);
     //Laat de effecten rejageren op het geluide
     if (chl7 >= 127){
+      
 
     }
-    //Serial.println(geluidlevel);
+    // Er word berekend welk level er mag staan bij het efect geluid level 
     int geluidvoorlopig;
     geluidvoorlopig = map(sampleBuffergeluidlevelue, 0, 3, 3, 60);
 
