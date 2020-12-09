@@ -11,7 +11,7 @@
 #define NUM_LEDS 255
 //geluide sensor 
 const int OUT_PIN = 8;
-const int SAMPLE_TIME = 15;
+const int SAMPLE_TIME = 20;
 //aantal effecten standaardt 6
 const int effecten = 6;
 //################################
@@ -51,6 +51,10 @@ void loop() {
   millisCurrent = millis();
   millisElapsed = millisCurrent - millisLast;
 
+  int effectnummer;
+  DMXscannen();
+  effectnummer = map(chl1, 0, 255, 1, 8);
+
 // geluid sensor
   if (digitalRead(OUT_PIN) == HIGH) {
     sampleBuffergeluidlevelue++;
@@ -63,42 +67,40 @@ void loop() {
 
     }
     // Er word berekend welk level er mag staan bij het efect geluid level 
-    int geluidvoorlopig;
-    geluidvoorlopig = map(sampleBuffergeluidlevelue, 0, 3, 3, 60);
+    if (effectnummer == 7){
+      int geluidvoorlopig;
+      geluidvoorlopig = map(sampleBuffergeluidlevelue, 0, 20, 3, 60);
 
-    if (geluidvoorlopig > geluidlevel){
-      if (geluidvoorlopig > 48){
-        geluidlevel = geluidlevel + 2;
-      } else if (geluidvoorlopig > 30){
-        geluidlevel = geluidlevel + 3;
-      } else{
-        geluidlevel = geluidlevel + 6;
+      if (geluidvoorlopig > geluidlevel){
+        if (geluidvoorlopig > 48){
+          geluidlevel = geluidlevel + 2;
+        } else if (geluidvoorlopig > 30){
+          geluidlevel = geluidlevel + 3;
+        } else{
+          geluidlevel = geluidlevel + 6;
+        }
       }
-    }
-    if (geluidvoorlopig <  geluidlevel){
-      minn = minn + 1;
-      if (geluidlevel > 48 and minn == 4){
-        geluidlevel = geluidlevel - 3;
-        minn = 0;
-      } else if (geluidlevel > 30 and minn == 5){
-        geluidlevel = geluidlevel - 2;
-        minn = 0;
-      } else if (minn == 10){
-        geluidlevel = geluidlevel - 1;
-        minn = 0;
+      if (geluidvoorlopig <  geluidlevel){
+        minn = minn + 1;
+        if (geluidlevel > 48 and minn == 4){
+          geluidlevel = geluidlevel - 3;
+          minn = 0;
+        } else if (geluidlevel > 30 and minn == 5){
+          geluidlevel = geluidlevel - 2;
+          minn = 0;
+        } else if (minn == 10){
+          geluidlevel = geluidlevel - 1;
+          minn = 0;
+        }
       }
+      VolumeLevel(geluidlevel);
     }
+    
     
     sampleBuffergeluidlevelue = 0;
     millisLast = millisCurrent;
   }
-//-------------------------------
 
-
-  int effectnummer;
-  DMXscannen();
-
-  effectnummer = map(chl1, 0, 255, 1, 8);
   
 // Regelt de snelijd van het effect.
   if (chl6 != vorigchl6){
@@ -112,7 +114,7 @@ void loop() {
       if (effectnummer == 4) {Regenboog();}
       if (effectnummer == 5) {Sterrenhemel();}
       if (effectnummer == 6) {Stroboscoop();}
-      if (effectnummer == 7) {VolumeLevel(geluidlevel);}
+
       timer = -32762;
   }
   timer += 1;
