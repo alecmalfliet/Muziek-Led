@@ -12,6 +12,8 @@
 //geluide sensor
 const int OUT_PIN = 8;
 const int SAMPLE_TIME = 20;
+const int GELUIDE_sensitive = 20; // Wanner de volume level omhoge gaat oe hoger hoe traager
+const int GELUIDE_sensitive_effecten = 4; // Wanner de effecten gaan reageren op een geluide
 //aantal effecten standaardt 6
 const int effecten = 6;
 //################################
@@ -51,21 +53,22 @@ void loop() {
   millisCurrent = millis();
   millisElapsed = millisCurrent - millisLast;
 
-  int effectnummer;
   DMXscannen();
+
+  int effectnummer;
   effectnummer = map(chl1, 0, 255, 1, 8);
 
   // geluid sensor
   if (digitalRead(OUT_PIN) == HIGH) {
     sampleBuffergeluidlevelue++;
   }
-  //-------------------------------
+  // Geluid berekingen 
   if (millisElapsed > SAMPLE_TIME) {
 
-    // Er word berekend welk level er mag staan bij het efect geluid level
+    // Er word berekend welk level er mag staan bij het effect geluid level
     if (effectnummer == 7) {
       int geluidvoorlopig;
-      geluidvoorlopig = map(sampleBuffergeluidlevelue, 0, 20, 3, 60);
+      geluidvoorlopig = map(sampleBuffergeluidlevelue, 0, GELUIDE_sensitive, 3, 60);
 
       if (geluidvoorlopig > geluidlevel) {
         if (geluidvoorlopig > 48) {
@@ -90,14 +93,11 @@ void loop() {
         }
       }
       VolumeLevel(geluidlevel);
-    } else if (chl7 >= 127) { //Laat de effecten rejageren op het geluide
-
-      if (sampleBuffergeluidlevelue > 4) {
+    } else if (chl7 >= 127) { //Laat de effecten reageren op het geluide als chl7 meer dan de helf open staat 
+      if (sampleBuffergeluidlevelue > GELUIDE_sensitive_effecten) {
         timer += 10000;
       }
     }
-
-
     sampleBuffergeluidlevelue = 0;
     millisLast = millisCurrent;
   }
@@ -109,7 +109,7 @@ void loop() {
     vorigchl6 = chl6;
   }
   if (timer > speed) {
-
+    // Word mee gegeven welk Effect er word afgespeeld.
     if (effectnummer == 1) {
       ledsset();
     }
@@ -125,7 +125,6 @@ void loop() {
     if (effectnummer == 5) {
       Stroboscoop();
     }
-
     timer = -32762;
   }
   timer += 1;
@@ -142,6 +141,7 @@ void ProgramerMode() {
   bool statusleds = false;
   bool mode = false;
 
+  //Hier word een loop gemaakt die maar gaat stopen als chl9,10,11,12 op null staat 
   while (mode == false) {
     if ((chl9 == 0) && (chl10 == 0) && (chl11 == 0) && (chl12 == 0)) {
       mode = true;
@@ -167,7 +167,7 @@ void ProgramerMode() {
     DMXscannen();
   }
 
-  // slaat de channels op in de EERROM voor wanner er geen dmx is en je toch bepaalde insteling wilt houden.
+  //Slaat de channels op in de EERROM voor wanner er geen dmx is en je toch bepaalde insteling wilt houden.
   EEPROM.write(1, chl1);
   EEPROM.write(2, chl2);
   EEPROM.write(3, chl3);
@@ -176,36 +176,6 @@ void ProgramerMode() {
   EEPROM.write(6, chl6);
   EEPROM.write(7, chl7);
   EEPROM.write(8, chl8);
-
-  // hier word bepaalt en opgeslagen welk channels de arduino moet naar luisteren
-  if ((chl13 > 250) && (chl14 > 250) && (chl15 > 255)) {
-    int channelstart;
-    if (chl16 < 17) {
-      channelstart = 0;
-    } else if (chl16 < 33) {
-      channelstart = 16;
-    } else if (chl16 < 49) {
-      channelstart = 32;
-    } else if (chl16 < 65) {
-      channelstart = 48;
-    } else if (chl16 < 81) {
-      channelstart = 64;
-    } else if (chl16 < 97) {
-      channelstart = 80;
-    } else if (chl16 < 113) {
-      channelstart = 96;
-    } else if (chl16 < 129) {
-      channelstart = 112;
-    } else if (chl16 < 145) {
-      channelstart = 128;
-    } else if (chl16 < 161) {
-      channelstart = 144;
-    } else if (chl16 < 177) {
-      channelstart = 160;
-    } else if (chl16 < 161) {
-      channelstart = 176;
-    }
-    EEPROM.write(0, channelstart);
   }
 
   int a;
@@ -223,7 +193,7 @@ void ProgramerMode() {
 void DMXscannen() {
   // Berekent hoe lang het geleden is dat er data is ontvangen op de DMX
   unsigned long lastPacket = DMXSerial.noDataSince();
-
+  // scannen alle DMX channels plaatst de data in de gedefinitie channels
   if (lastPacket < 5000) {
     chl1 = DMXSerial.read(1);
     chl2 = DMXSerial.read(2);
@@ -244,10 +214,9 @@ void DMXscannen() {
     chl16 = DMXSerial.read(16);
 
   } else {
-    // Laat zien wanner er geen data ontvangen is langer als 5 seconden.
-
+    // Wanner er geen data ontvangen langer als 5 seconden.
     //zet de EEPROM geluidlevelues in de juist channels definitie
-    if (eeprom_read == false) {
+    if (eeprom_read == false) { // zorgt er voor dat het maar 1 keer in de channels word gezet 
       chl1 = EEPROM.read(1);
       chl2 = EEPROM.read(2);
       chl3 = EEPROM.read(3);
@@ -259,7 +228,6 @@ void DMXscannen() {
       eeprom_read = true;
     }
   }
-
 }
 
 
@@ -333,13 +301,11 @@ void Stroboscoop() {
 }
 
 // dit is een geluids meeter zo als je zit op een dj pannel
-
 /*
   Kleur verdeeling
   Groen:10 Geel:6 Rood:4
   Groen: 5/10 Geel: 3/10 Rood: 2/10
 */
-
 void VolumeLevel(int level) {
   for (int i = 0; i < level; i++) {
     if (i < 30) {
