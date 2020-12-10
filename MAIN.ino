@@ -10,12 +10,9 @@
 #define Geluidsensor_PIN 8
 #define NUM_LEDS 255
 //geluide sensor
-const int OUT_PIN = 8;
 const int SAMPLE_TIME = 20;
 const int GELUIDE_sensitive = 20; // Wanner de volume level omhoge gaat oe hoger hoe traager
 const int GELUIDE_sensitive_effecten = 4; // Wanner de effecten gaan reageren op een geluide
-//aantal effecten standaardt 6
-const int effecten = 6;
 //################################
 
 
@@ -46,7 +43,6 @@ void setup () {
   DMXSerial.init(DMXReceiver);
   FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
   FastLED.setBrightness(255);
-
 }
 
 void loop() {
@@ -56,17 +52,17 @@ void loop() {
   DMXscannen();
 
   int effectnummer;
-  effectnummer = map(chl1, 0, 255, 1, 8);
+  effectnummer = map(chl1, 0, 255, 1, 7);
 
   // geluid sensor
-  if (digitalRead(OUT_PIN) == HIGH) {
+  if (digitalRead(Geluidsensor_PIN) == HIGH) {
     sampleBuffergeluidlevelue++;
   }
   // Geluid berekingen 
   if (millisElapsed > SAMPLE_TIME) {
 
     // Er word berekend welk level er mag staan bij het effect geluid level
-    if (effectnummer == 7) {
+    if (effectnummer == 6) {
       int geluidvoorlopig;
       geluidvoorlopig = map(sampleBuffergeluidlevelue, 0, GELUIDE_sensitive, 3, 60);
 
@@ -114,7 +110,7 @@ void loop() {
       ledsset();
     }
     if (effectnummer == 2) {
-      Loopende(0);
+      Loopende();
     }
     if (effectnummer == 3) {
       Regenboog();
@@ -176,7 +172,6 @@ void ProgramerMode() {
   EEPROM.write(6, chl6);
   EEPROM.write(7, chl7);
   EEPROM.write(8, chl8);
-  }
 
   int a;
   while (a < 200)
@@ -240,7 +235,7 @@ void ledsset() {
 }
 
 // Dit geeft een loopen effect
-void Loopende(int level) {
+void Loopende() {
   int middel =  (NUM_LEDS + 1) / 6;
   int plaas = plaatshouder1;
   for (int i = 0; i < middel; i++) {
@@ -263,7 +258,7 @@ void Loopende(int level) {
 
 // Dit geeft een mooi regenboog effect
 void Regenboog() {
-  int Veelvuldig = map(chl3, 0, 255, 0, 100);
+  int Veelvuldig = map((255 - chl3), 0, 255, 0, 100);
   hue = hue + map(chl2, 0, 255, 0, 10);
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = CHSV(hue + (i * Veelvuldig), 255, 150);
